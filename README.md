@@ -1,129 +1,75 @@
-# Desafio Pipeline de Dados EX-001
+# Desafio Técnico ECO – Monitoramento de Eficiência OEE
 
-## Visão Geral
-Este desafio prático visa validar competências de:
+O objetivo deste projeto é demonstrar a criação de uma solução completa de ingestão e visualização de dados industriais em tempo real. Utilizando o protocolo MQTT, os dados são captados, armazenados em um banco de dados PostgreSQL e apresentados em um dashboard com indicadores operacionais (KPIs) calculados no Grafana.
 
-1. **Modelagem de Banco de Dados** (PostgreSQL)
-2. **Ingestão de Dados via MQTT** com Python (broker MQTT configurado para MQTT)
-3. **Visualização de KPIs** em Grafana (ou Power BI)
+---
 
-Os dados de operação da máquina **EX-001** são transmitidos automaticamente a cada 5 minutos por um ambiente MQTT em nuvem. Seu trabalho é **processar** essas informações e **criar** o dashboard de OEE (e demais KPIs).
+## ⚙️ Como Executar o Projeto
 
-Você receberá credenciais (host, porta, usuário e senha) para esse ambiente MQTT, que publica mensagens no tópico `ECOPLUS/EX-001/dados`. Seu objetivo é:
+> Pré-requisitos: Docker e Docker Compose instalados
 
-- Consumir essas mensagens JSON
-- Persisti-las em PostgreSQL
-- Criar dashboards com os KPIs abaixo:
-  - **Disponibilidade**
-  - **Performance** (meta: 100 peças/hora)
-  - **Qualidade**
-  - **OEE**
-  - **Total de peças produzidas**
-  - **Total de peças defeituosas**
-
-Para testar e depurar a conexão MQTT, recomendamos instalar o [**MQTT Explorer**](https://mqtt-explorer.com) ou qualquer outro cliente de sua preferência.
-
-## Estrutura do Repositório
-
-```
-├── README.md
-├── .env.example
-├── docker-compose.yml
-├── ingestion/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── main.py
-├── db/
-│   └── init.sql
-├── grafana/
-│   ├── provisioning/
-│   │   ├── datasources/
-│   │   │   └── datasources.yml
-│   │   └── dashboards/
-│   │       └── dashboard_oee.json
-└── docs/
-├── architecture_diagram.png
-└── architecture_diagram.md
-```
-
-## Requisitos
-- Docker e Docker Compose instalados
-- Acesso ao broker MQTT (credenciais serão fornecidas)
-- Git
-- MQTT Client (opcional, para debug)
-
-## Configuração
-1. Copie o arquivo de exemplo de variáveis de ambiente:
-    ```bash
-    cp .env.example .env
-    ```
-
-2. Preencha `MQTT_HOST`, `MQTT_PORT`, `MQTT_USER` e `MQTT_PASS` com as credenciais do broker MQTT:
-    ```
-    - MQTT_HOST = mqtt.ecoplus-apps.com
-    - MQTT_PORT = 1883
-    - MQTT_USER = ecoplus-teste:temp_user
-    - MQTT_PASS = u9JJ8d8DOp
-    ```
-
-## Preparação do ambiente
-
+1. Clone o projeto no seu ambiente local:
 ```bash
-# Na raiz do projeto
+git clone https://github.com/seu-usuario/desafio-tecnico-backend.git
+cd desafio-tecnico-backend
+```
+
+2. Copie o arquivo de variáveis de ambiente:
+```bash
+cp .env.example .env
+```
+
+3. Preencha o arquivo .env com as credenciais fornecidas.
+
+4. Inicie os containers com:
+```bash
 docker-compose up --build
 ```
 
-Isso irá:
+5. Acesse:
 
-* Iniciar o serviço PostgreSQL e executar o script de criação de tabelas (`db/init.sql`).
-* Subir o serviço Python de ingestão, que se conecta ao broker MQTT via MQTT e persiste os dados no banco.
-* Executar o Grafana com provisionamento automático de data source.
-
-## Execução
-
-1. Abra o MQTT Client e conecte-se usando as credenciais definidas em `.env`;
-2. Confirme o recebimento de mensagens JSON no tópico `ECOPLUS/EX-001/dados`, por exemplo:
-
-   ```json
-   {
-     "id_maquina": 1,
-     "datahora": "2025-01-01T12:00:00-03:00",
-     "ligada": true,
-     "operacao": true,
-     "manutencao_corretiva": false,
-     "manutencao_preventiva": false,
-     "pecas_produzidas": 9,
-     "pecas_defeituosas": 1
-   }
-   ```
-3. Verifique nos logs do container `ingestion` e banco de dados `postgres` se a mensagem foi processada e inserida;
-4. Acesse o Grafana em `http://localhost:3000` (usuário/senha: `admin`/`admin`);
-5. Crie o dashboard **OEE** com os KPIs especificados na próximo tópico;
-6. Aplique seleção de tempo `time picker` nas queries SQL configuradas nos painéis, como no exemplo abaixo:
-```sql
-SELECT *
-FROM dados_maquina
-WHERE $__timeFilter(datahora)
-```
-7. Documente os passos da criação e execução da solução em um arquivo Markdown de forma clara e objetiva;
-8. Documente também o resultado final do dashboard (prints e arquivo `.json` de import são bem vindos) e os registros de dados, da forma que preferir;
-
-## KPIs considerados
-
-### A partir dos dados aferidos e registrados, crie um dashboard com os seguintes indicadores:
-
-* **Disponibilidade**: % de tempo em que a máquina esteve pronta para operar (sem paradas, desligamentos e manutenções).
-* **Performance**: (peças boas produzidas/hora) ÷ (meta de produção) × 100
-* **Qualidade**: (peças boas ÷ peças produzidas) × 100
-* **OEE**: Disponibilidade × Performance × Qualidade
-* **Total de peças produzidas**: soma de `pecas_produzidas` no intervalo.
-* **Total de peças defeituosas**: soma de `pecas_defeituosas` no intervalo.
-> Obs: Meta de produção = 100 peças/hora.
-
-#### Mais informações sobre indicadores em [OEE Factors](https://www.oee.com/oee-factors).
+- Grafana: http://localhost:3000
+- Login: admin | Senha: admin
+- MQTT Explorer: para visualizar o tópico ECOPLUS/EX-001/dados (opcional)
 
 ---
- 
-### Demonstre sua capacidade de resolução de problemas e análise de dados com a criação desse dashboard e nos envie os resultados! 
-### Encaminhe seu projeto para o seu contato da ECO+, com cópia para rh@ecoautomacao.com.br. 
-## Boa sorte!
+
+## 📊 Indicadores no Dashboard
+
+![Dashboard OEE](imagens/dashboard.jpeg)
+
+O dashboard no Grafana apresenta os seguintes KPIs:
+
+- Total de peças produzidas: Soma de pecas_produzidas
+- Total de peças defeituosas: Soma de pecas_defeituosas
+- Qualidade (%): (pecas_boas / pecas_produzidas) × 100
+- Performance (%): (pecas_boas / tempo_ligado_em_horas) ÷ 100 × 100
+- Disponibilidade (%): (tempo ligado ÷ tempo total do período)
+- OEE (%): Disponibilidade × Performance × Qualidade
+
+> As consultas utilizam o filtro de tempo padrão:
+
+```sql
+WHERE $__timeFilter(datahora)
+```
+
+---
+
+## 📁 Organização dos Arquivos
+
+- README.md: instruções e documentação (este arquivo)
+- grafana/dashboard_oee.json: exportação do dashboard criado no Grafana
+- imagens/: pasta com prints do dashboard para ilustração
+- ingestion/main.py: script de ingestão que escuta o MQTT e grava no banco
+- .env: variáveis de ambiente (não incluído no repositório)
+- docker-compose.yml: orquestração dos containers
+
+---
+
+## 🧠 Análise dos Dados
+Com base nas leituras do período testado:
+
+- A qualidade das peças foi elevada (88,2%), indicando baixo índice de defeitos.
+- A performance ficou abaixo da meta de 100 peças/hora, sugerindo gargalos ou lentidão no processo.
+- A disponibilidade foi de cerca de 86%, o que indica que a máquina esteve inativa por 14% do tempo monitorado.
+- O OEE final calculado ficou por volta de 53%, valor abaixo do ideal, o que pode ser utilizado como alerta para ações corretivas.
