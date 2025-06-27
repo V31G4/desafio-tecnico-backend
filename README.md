@@ -73,3 +73,7 @@ Com base nas leituras do período testado:
 - A performance ficou abaixo da meta de 100 peças/hora, sugerindo gargalos ou lentidão no processo.
 - A disponibilidade foi de cerca de 86%, o que indica que a máquina esteve inativa por 14% do tempo monitorado.
 - O OEE final calculado ficou por volta de 53%, valor abaixo do ideal, o que pode ser utilizado como alerta para ações corretivas.
+
+--- 
+
+> Correção: Dashboard do Grafana foi corrigido cores laranja para amarelo.
